@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Toplama</title></head>
+<body>
+  <h2>İki sayıyı topla:</h2>
+  <form method="post">
+    <input name="sayi1" placeholder="Sayı 1"><br>
+    <input name="sayi2" placeholder="Sayı 2"><br>
+    <button type="submit">Hesapla</button>
+  </form>
+
+  {% if result is not none %}
+    <p>Sonuç: {{ result }}</p>
+  {% endif %}
+</body>
+</html>
