@@ -1,16 +1,280 @@
 <!DOCTYPE html>
-<html>
-<head><title>Toplama</title></head>
-<body>
-  <h2>İki sayıyı topla:</h2>
-  <form method="post">
-    <input name="sayi1" placeholder="Sayı 1"><br>
-    <input name="sayi2" placeholder="Sayı 2"><br>
-    <button type="submit">Hesapla</button>
-  </form>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İHA Veri Paneli - Gelişmiş</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+        h1, h2 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 25px; }
+        .container { max-width: 960px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], .form-group input[type="password"] {
+            width: calc(100% - 22px); /* Padding'i hesaba kat */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover:not(:disabled) { background-color: #0056b3; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
-  {% if result is not none %}
-    <p>Sonuç: {{ result }}</p>
-  {% endif %}
+        .token-display {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .data-section {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        .data-section h3 { color: #007bff; margin-top: 0; }
+        .data-section pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 300px;
+            white-space: pre-wrap; /* Uzun metinlerin satır sonu yapmasını sağlar */
+        }
+        .status-message { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: bold; }
+        .status-success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .status-error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .status-info { background-color: #cfe2ff; color: #052c65; border-color: #b6d4fe; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>İHA Veri Paneli</h1>
+        <p>Sunucuya giriş yaparak yetkilendirme token'ı alın, ardından istediğiniz veriyi çekin.</p>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <h2>1. Giriş Yap</h2>
+        <div class="form-group">
+            <label for="username">Kullanıcı Adı:</label>
+            <input type="text" id="username" value="teknofest_user" placeholder="Kullanıcı Adı">
+        </div>
+        <div class="form-group">
+            <label for="password">Şifre:</label>
+            <input type="password" id="password" value="savasaniha2025" placeholder="Şifre">
+        </div>
+        <button id="loginButton" onclick="login()">Giriş Yap</button>
+        <button id="logoutButton" onclick="logout()" disabled>Çıkış Yap</button>
+
+        <div class="token-display" id="tokenDisplay">
+            Token: <span id="tokenValue">Giriş yapılmadı.</span>
+        </div>
+
+        <h2>2. Veri Çek (Giriş Yapıldıktan Sonra Aktif Olur)</h2>
+        <p>Aşağıdaki butonlara tıklayarak ilgili JSON verilerini çekebilirsiniz.</p>
+
+        <button id="fetchTelemetryButton" onclick="fetchData('telemetry')" disabled>Telemetri Çek</button>
+        <button id="fetchServerTimeButton" onclick="fetchData('server_time')" disabled>Sunucu Saati Çek</button>
+        <button id="fetchHSSButton" onclick="fetchData('hss_coordinates')" disabled>HSS Koordinatları Çek</button>
+        <button id="fetchLockOnButton" onclick="fetchData('lock_on_info')" disabled>Kilitlenme Bilgisi Çek</button>
+        <button id="fetchKamikazeButton" onclick="fetchData('kamikaze_info')" disabled>Kamikaze Bilgisi Çek</button>
+        <button id="fetchQRButton" onclick="fetchData('qr_coordinates')" disabled>QR Koordinatı Çek</button>
+        <button id="clearDataButton" onclick="clearAllDataDisplays()">Tüm Verileri Temizle</button>
+
+        <div class="data-section">
+            <h3>Telemetri Verisi</h3>
+            <pre id="telemetryData">Bekleniyor...</pre>
+        </div>
+
+        <div class="data-section">
+            <h3>Sunucu Saati</h3>
+            <pre id="serverTimeData">Bekleniyor...</pre>
+        </div>
+
+        <div class="data-section">
+            <h3>HSS Koordinatları</h3>
+            <pre id="hssData">Bekleniyor...</pre>
+        </div>
+
+        <div class="data-section">
+            <h3>Kilitlenme Bilgisi</h3>
+            <pre id="lockOnData">Bekleniyor...</pre>
+        </div>
+
+        <div class="data-section">
+            <h3>Kamikaze Bilgisi</h3>
+            <pre id="kamikazeData">Bekleniyor...</pre>
+        </div>
+
+        <div class="data-section">
+            <h3>QR Koordinatı</h3>
+            <pre id="qrData">Bekleniyor...</pre>
+        </div>
+    </div>
+
+    <script>
+        // Sunucu IP adresi ve portu
+        const BASE_URL = 'http://10.88.2.187:5000'; // ARKADAŞINIZIN GÜNCEL IP ADRESİNİ BURAYA GİRİN!
+        let authToken = null; // Giriş sonrası alacağımız token
+
+        // DOM elementleri
+        const statusMessage = document.getElementById('statusMessage');
+        const tokenValueSpan = document.getElementById('tokenValue');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        const fetchButtons = [
+            document.getElementById('fetchTelemetryButton'),
+            document.getElementById('fetchServerTimeButton'),
+            document.getElementById('fetchHSSButton'),
+            document.getElementById('fetchLockOnButton'),
+            document.getElementById('fetchKamikazeButton'),
+            document.getElementById('fetchQRButton')
+        ];
+
+        const dataDisplayElements = {
+            'telemetry': document.getElementById('telemetryData'),
+            'server_time': document.getElementById('serverTimeData'),
+            'hss_coordinates': document.getElementById('hssData'),
+            'lock_on_info': document.getElementById('lockOnData'),
+            'kamikaze_info': document.getElementById('kamikazeData'),
+            'qr_coordinates': document.getElementById('qrData')
+        };
+
+
+        function showStatus(message, type = 'success') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+        }
+
+        function setButtonsEnabled(enabled) {
+            fetchButtons.forEach(button => button.disabled = !enabled);
+            logoutButton.disabled = !enabled;
+            loginButton.disabled = enabled;
+            usernameInput.disabled = enabled;
+            passwordInput.disabled = enabled;
+        }
+
+        function clearAllDataDisplays() {
+            for (const key in dataDisplayElements) {
+                dataDisplayElements[key].textContent = 'Bekleniyor...';
+            }
+            showStatus('Tüm veri ekranları temizlendi.', 'info');
+        }
+
+        async function login() {
+            showStatus('Giriş yapılıyor...', 'info');
+            clearAllDataDisplays(); // Giriş denemeden önce eski verileri temizle
+
+            const kadi = usernameInput.value;
+            const sifre = passwordInput.value;
+
+            try {
+                const loginResponse = await fetch(`${BASE_URL}/api/giris`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ kadi: kadi, sifre: sifre })
+                });
+
+                if (!loginResponse.ok) {
+                    const errorData = await loginResponse.json();
+                    throw new Error(`Giriş başarısız: ${errorData.error || loginResponse.statusText}`);
+                }
+
+                const loginResult = await loginResponse.json();
+                authToken = loginResult.token;
+                tokenValueSpan.textContent = authToken;
+                showStatus('Giriş başarılı! Verileri çekmek için butonları kullanın.', 'success');
+                setButtonsEnabled(true); // Veri çekme butonlarını aktif et
+
+            } catch (error) {
+                console.error('Giriş hatası:', error);
+                showStatus(`Giriş Hatası: ${error.message}`, 'error');
+                authToken = null;
+                tokenValueSpan.textContent = 'Giriş yapılmadı.';
+                setButtonsEnabled(false); // Hata durumunda butonları devre dışı bırak
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            tokenValueSpan.textContent = 'Giriş yapılmadı.';
+            setButtonsEnabled(false); // Tüm veri çekme butonlarını devre dışı bırak
+            clearAllDataDisplays();
+            showStatus('Çıkış yapıldı.', 'info');
+        }
+
+        async function fetchData(dataType) {
+            if (!authToken) {
+                showStatus('Lütfen önce giriş yapın!', 'error');
+                return;
+            }
+
+            const urlMap = {
+                'telemetry': `${BASE_URL}/api/telemetri`,
+                'server_time': `${BASE_URL}/api/sunucusaati`,
+                'hss_coordinates': `${BASE_URL}/api/hss_koordinatlari`,
+                'lock_on_info': `${BASE_URL}/api/kilitlenme_bilgisi`,
+                'kamikaze_info': `${BASE_URL}/api/kamikaze_bilgisi`,
+                'qr_coordinates': `${BASE_URL}/api/qr_koordinati`
+            };
+
+            const displayElement = dataDisplayElements[dataType];
+            const url = urlMap[dataType];
+
+            if (!url) {
+                displayElement.textContent = 'Geçersiz veri tipi.';
+                return;
+            }
+
+            displayElement.textContent = 'Yükleniyor...'; // Veri çekilirken mesaj göster
+
+            try {
+                const headers = { 'Authorization': `Bearer ${authToken}` };
+                const response = await fetch(url, { method: 'GET', headers: headers });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API isteği başarısız (${url}): ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayElement.textContent = JSON.stringify(data, null, 2); // JSON'ı düzgün formatta göster
+                showStatus(`${dataType} verisi başarıyla çekildi.`, 'success');
+
+            } catch (error) {
+                console.error(`Veri çekme hatası (${dataType}):`, error);
+                displayElement.textContent = `Hata: ${error.message}`;
+                showStatus(`Hata: ${error.message}`, 'error');
+            }
+        }
+
+        // Sayfa yüklendiğinde butonların başlangıç durumunu ayarla
+        document.addEventListener('DOMContentLoaded', () => {
+            setButtonsEnabled(false); // Başlangıçta veri çekme butonları pasif
+            tokenValueSpan.textContent = 'Giriş yapılmadı.';
+            statusMessage.textContent = 'Giriş yapmak için bilgileri doldurup "Giriş Yap" butonuna tıklayın.';
+            statusMessage.className = 'status-message status-info';
+            clearAllDataDisplays();
+        });
+    </script>
 </body>
 </html>
