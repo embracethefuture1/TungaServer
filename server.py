@@ -71,6 +71,25 @@ def get_telemetry():
         return jsonify(data['telemetry'])
     return jsonify({"error": "Telemetri verisi bulunamadı."}), 500
 
+# İşte yeni eklenen POST metodu
+@app.route('/api/telemetri', methods=['POST'])
+def post_telemetry():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({"error": "Token gerekli"}), 401
+    token = auth_header.replace("Bearer ", "")
+    if not authenticate_token(token):
+        return jsonify({"error": "Geçersiz token"}), 401
+
+    data = request.get_json()
+    if data is None:
+        return jsonify({"error": "Geçersiz JSON"}), 400
+
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
+        json.dump({"telemetry": data}, f, ensure_ascii=False, indent=4)
+
+    return jsonify({"message": "Telemetri verisi alındı."}), 200
+
 @app.route('/api/sunucusaati', methods=['GET'])
 def get_server_time():
     now = datetime.datetime.now()
@@ -124,3 +143,4 @@ def get_qr_coordinates():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
