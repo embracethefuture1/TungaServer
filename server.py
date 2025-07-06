@@ -4,6 +4,7 @@ import datetime
 import os
 import uuid
 from flask_cors import CORS
+import requests  # <-- yeni ekleme
 
 app = Flask(__name__)
 CORS(app)
@@ -46,6 +47,21 @@ def check_authorization():
     if not authenticate_token(token):
         return jsonify({"error": "Geçersiz veya süresi dolmuş token."}), 401
 
+# --- Yeni eklenen GitHub'dan veri indirme fonksiyonu ---
+GITHUB_RAW_URL = 'https://raw.githubusercontent.com/kullanici_adi/repo_adi/branch/data.json'  # BURAYA gerçek URL'ni koy
+
+def download_data_json():
+    try:
+        response = requests.get(GITHUB_RAW_URL)
+        if response.status_code == 200:
+            with open(DATA_FILE, 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            print("data.json başarıyla güncellendi.")
+        else:
+            print(f"GitHub dosyası alınamadı, status code: {response.status_code}")
+    except Exception as e:
+        print(f"Hata: {e}")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -71,7 +87,6 @@ def get_telemetry():
         return jsonify(data['telemetry'])
     return jsonify({"error": "Telemetri verisi bulunamadı."}), 500
 
-# İşte yeni eklenen POST metodu
 @app.route('/api/telemetri', methods=['POST'])
 def post_telemetry():
     auth_header = request.headers.get('Authorization')
@@ -141,6 +156,8 @@ def get_qr_coordinates():
         return jsonify(data['qr_coordinates'])
     return jsonify({"error": "QR koordinat bilgisi bulunamadı."}), 500
 
+
 if __name__ == '__main__':
+    download_data_json()  # <-- Sunucu başlarken data.json güncellenir
     app.run(host='0.0.0.0', port=5000)
 
