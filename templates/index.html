@@ -517,6 +517,22 @@
                 }
             };
 
+            // --- Olay Dinleyicileri (Event Listeners) ---
+            ui.loginButton.addEventListener('click', handleLogin);
+            ui.logoutButton.addEventListener('click', handleLogout);
+            ui.clearDataButton.addEventListener('click', clearAllDataDisplays);
+            ui.dataFetchButtonContainer.addEventListener('click', handleFetchData);
             
+            // Butonların orijinal HTML'ini sakla
+            document.querySelectorAll('button').forEach(button => {
+                 button.dataset.originalHtml = button.innerHTML;
+            });
+
+            // --- Başlangıç Ayarları ---
+            updateUIForLoginState(false);
+            showStatus('Panele hoş geldiniz! Lütfen giriş yapın.', 'info');
+        });
+    </script>
+    <!-- JavaScript Kodları Bitişi -->
 </body>
 </html>
