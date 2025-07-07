@@ -4,7 +4,7 @@ import datetime
 import os
 import uuid
 from flask_cors import CORS
-import requests  # <-- yeni ekleme
+import requests
 import jwt
 from datetime import datetime, timedelta
 
@@ -173,5 +173,6 @@ def get_qr_coordinates():
 if __name__ == '__main__':
     download_data_json()  # <-- Sunucu başlarken data.json güncellenir
     app.run(host='0.0.0.0', port=5000)
+
 
 
