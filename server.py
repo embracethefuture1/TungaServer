@@ -5,6 +5,8 @@ import os
 import uuid
 from flask_cors import CORS
 import requests  # <-- yeni ekleme
+import jwt
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +20,9 @@ USERS = {
     }
 }
 
-active_tokens = {}
+JWT_SECRET = os.environ.get('JWT_SECRET', 'supersecretkey')
+JWT_ALGORITHM = 'HS256'
+JWT_EXP_DELTA_SECONDS = 3600  # 1 saat
 
 def load_data():
     if not os.path.exists(DATA_FILE):
@@ -29,23 +33,33 @@ def load_data():
     except:
         return None
 
-def authenticate_token(token):
-    return token in active_tokens
+def create_jwt_token(username):
+    payload = {
+        'user': username,
+        'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_jwt_token(token):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload['user']
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None
 
 @app.before_request
 def check_authorization():
     no_auth_paths = ['/', '/api/giris']
-
     if request.path in no_auth_paths or request.method == 'OPTIONS':
         return
-
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return jsonify({"error": "Token gerekli veya format hatalı (Bearer <token>)"}), 401
-
     token = auth_header.replace("Bearer ", "")
-    if not authenticate_token(token):
-        return jsonify({"error": "Geçersiz veya süresi dolmuş token."}), 401
+    user = decode_jwt_token(token)
+    if not user:
+        return jsonify({"error": "Geçersiz, süresi dolmuş veya hatalı token."}), 401
+    request.user = user  # Gerekirse endpointlerde kullanmak için
 
 # --- Yeni eklenen GitHub'dan veri indirme fonksiyonu ---
 GITHUB_RAW_URL = 'https://raw.githubusercontent.com/kullanici_adi/repo_adi/branch/data.json'  # BURAYA gerçek URL'ni koy
@@ -71,10 +85,8 @@ def giris():
     data = request.get_json()
     kadi = data.get('kadi')
     sifre = data.get('sifre')
-
     if kadi in USERS and USERS[kadi]["sifre"] == sifre:
-        token = str(uuid.uuid4())
-        active_tokens[token] = kadi
+        token = create_jwt_token(kadi)
         takim_numarasi = USERS[kadi]["takim_numarasi"]
         return jsonify({"message": "Giriş başarılı.", "token": token, "takim_numarasi": takim_numarasi}), 200
     else:
@@ -85,7 +97,7 @@ def get_telemetry():
     data = load_data()
     if data and 'telemetry' in data:
         return jsonify(data['telemetry'])
-    return jsonify({"error": "Telemetri verisi bulunamadı."}), 500
+    return jsonify({"error": "Telemetri verisi bulunamadı veya data.json dosyası eksik."}), 404
 
 @app.route('/api/telemetri', methods=['POST'])
 def post_telemetry():
@@ -93,8 +105,9 @@ def post_telemetry():
     if not auth_header or not auth_header.startswith('Bearer '):
         return jsonify({"error": "Token gerekli"}), 401
     token = auth_header.replace("Bearer ", "")
-    if not authenticate_token(token):
-        return jsonify({"error": "Geçersiz token"}), 401
+    user = decode_jwt_token(token)
+    if not user:
+        return jsonify({"error": "Geçersiz, süresi dolmuş veya hatalı token."}), 401
 
     data = request.get_json()
     if data is None:

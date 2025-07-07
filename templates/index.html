@@ -503,10 +503,14 @@
                     if (!response.ok) {
                         throw new Error(data.error || `API isteği başarısız oldu: ${response.statusText}`);
                     }
-                    
-                    displayElement.textContent = JSON.stringify(data, null, 2);
-                    showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
-
+                    // Telemetri için özel gösterim
+                    if (dataType === 'telemetry') {
+                        displayElement.textContent = JSON.stringify(data, null, 2);
+                        showStatus('Telemetri verisi başarıyla çekildi.', 'success');
+                    } else {
+                        displayElement.textContent = JSON.stringify(data, null, 2);
+                        showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
+                    }
                 } catch (error) {
                     console.error(`Veri Çekme Hatası (${dataType}):`, error);
                     displayElement.textContent = `Hata: ${error.message}`;
