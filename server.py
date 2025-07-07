@@ -98,8 +98,26 @@ def post_telemetry():
     if data is None:
         return jsonify({"error": "Geçersiz JSON"}), 400
 
+    # Son 20 telemetriyi tutacak şekilde güncelle
+    telemetry_list = []
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+                if isinstance(existing, dict) and 'telemetry' in existing:
+                    if isinstance(existing['telemetry'], list):
+                        telemetry_list = existing['telemetry']
+                    else:
+                        telemetry_list = [existing['telemetry']]
+        except Exception:
+            telemetry_list = []
+
+    telemetry_list.append(data)
+    if len(telemetry_list) > 20:
+        telemetry_list = telemetry_list[-20:]
+
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump({"telemetry": data}, f, ensure_ascii=False, indent=4)
+        json.dump({"telemetry": telemetry_list}, f, ensure_ascii=False, indent=4)
 
     return jsonify({"message": "Telemetri verisi alındı."}), 200
 
