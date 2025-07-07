@@ -174,3 +174,4 @@ if __name__ == '__main__':
     download_data_json()  # <-- Sunucu başlarken data.json güncellenir
     app.run(host='0.0.0.0', port=5000)
 
+
