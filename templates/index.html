@@ -508,8 +508,8 @@
                         displayElement.textContent = JSON.stringify(data, null, 2);
                         showStatus('Telemetri verisi başarıyla çekildi.', 'success');
                     } else {
-                        displayElement.textContent = JSON.stringify(data, null, 2);
-                        showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
+                    displayElement.textContent = JSON.stringify(data, null, 2);
+                    showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
                     }
                 } catch (error) {
                     console.error(`Veri Çekme Hatası (${dataType}):`, error);

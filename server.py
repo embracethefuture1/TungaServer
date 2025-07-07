@@ -49,7 +49,7 @@ def decode_jwt_token(token):
 
 @app.before_request
 def check_authorization():
-    no_auth_paths = ['/', '/api/giris']
+    no_auth_paths = ['/', '/api/giris', '/favicon.ico']
     if request.path in no_auth_paths or request.method == 'OPTIONS':
         return
     auth_header = request.headers.get('Authorization')
