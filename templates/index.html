@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profesyonel İHA Veri Paneli (Tek Dosya)</title>
+    <title>Profesyonel İHA Veri Paneli (Akıcı Versiyon)</title>
     <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,6 @@
     
     <!-- CSS Kodları Başlangıcı -->
     <style>
-        /* --- Değişkenler ve Genel Ayarlar --- */
         :root {
             --bg-color: #1a1a2e;
             --card-color: #16213e;
@@ -25,254 +24,72 @@
             --success-color: #28a745;
             --error-color: #dc3545;
             --info-color: #17a2b8;
+            --warning-color: #ffc107;
             --font-family: 'Poppins', sans-serif;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        /* --- Kart Yapısı --- */
-        .card {
-            background-color: var(--card-color);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(83, 127, 231, 0.2);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        .card-header h2 {
-            color: var(--text-color);
-            font-size: 1.5rem;
-        }
-
-        i {
-            margin-right: 10px;
-            color: var(--primary-color);
-        }
-
-        /* --- Form ve Butonlar --- */
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-size: 1rem;
-        }
-        .login-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            align-items: flex-end;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: var(--font-family);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        button i {
-            color: white;
-        }
-        button:hover:not(:disabled) {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            background-color: #555;
-            color: #999;
-            cursor: not-allowed;
-        }
-        button:disabled i {
-            color: #999;
-        }
-        #clearDataButton {
-            background-color: transparent;
-            border: 1px solid var(--error-color);
-            color: var(--error-color);
-        }
-        #clearDataButton:hover {
-            background-color: var(--error-color);
-            color: white;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 25px; }
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 5px; }
+        header p { color: var(--text-muted); font-size: 1.1rem; }
+        .card { background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .card-header h2, .card-header h3 { color: var(--text-color); font-size: 1.5rem; display: flex; align-items: center; }
+        i { margin-right: 10px; color: var(--primary-color); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-muted); }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-color); color: var(--text-color); font-size: 1rem; }
+        .login-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-end; }
+        .button-group { display: flex; gap: 10px; }
+        button { background-color: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background-color 0.3s ease, transform 0.2s ease; display: flex; align-items: center; justify-content: center; position: relative; }
+        button:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
+        button:disabled { background-color: #555; color: #999; cursor: not-allowed; }
+        #clearDataButton { background-color: transparent; border: 1px solid var(--error-color); color: var(--error-color); }
+        #clearDataButton:hover { background-color: var(--error-color); color: white; }
         #clearDataButton i { color: inherit; }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-        }
-
-        /* --- Token ve Durum Mesajları --- */
-        .token-display {
-            background-color: var(--bg-color);
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        .token-display span {
-            color: var(--text-color);
-            word-break: break-all;
-        }
-
-        #statusMessageContainer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .status-message {
-            padding: 15px 20px;
-            border-radius: 5px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            opacity: 0;
-            transform: translateX(100%);
-            animation: slideIn 0.5s forwards;
-        }
-        @keyframes slideIn {
-            to { opacity: 1; transform: translateX(0); }
-        }
+        .button-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .token-display { background-color: var(--bg-color); padding: 8px 15px; border-radius: 5px; font-family: monospace; font-size: 0.9rem; color: var(--text-muted); }
+        .token-display span { color: var(--text-color); word-break: break-all; }
+        #statusMessageContainer { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        .status-message { padding: 15px 20px; border-radius: 5px; font-weight: 600; color: white; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); opacity: 0; transform: translateX(100%); animation: slideIn 0.5s forwards; }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         .status-success { background-color: var(--success-color); }
         .status-error { background-color: var(--error-color); }
         .status-info { background-color: var(--info-color); }
-
-        /* --- Veri Gösterim Alanı --- */
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-        }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; }
+        
+        /* --- ESNEK VE STABİL CSS --- */
         .data-card pre {
             background-color: #0d1117;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             overflow-x: auto;
-            max-height: 300px;
             white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 180px; /* Veri azken bile kutu çökmesin */
+            height: auto;      /* Yüksekliği içeriğe göre ayarla */
+            max-height: none;  /* DİKEY SCROLL BAR OLUŞMASINI ENGELLER */
             font-family: monospace;
             color: #c9d1d9;
             position: relative;
-            min-height: 100px;
         }
-
-        /* --- Yükleme Animasyonu (Spinner) --- */
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s ease-in-out infinite;
-            margin: auto;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-        }
-        button .spinner {
-            width: 16px; height: 16px;
-            position: static; margin-right: 10px;
-            border-top-color: var(--primary-color);
-        }
-        button:disabled .spinner {
-            border-top-color: #999;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Mobil Cihazlar İçin Ayarlar */
+        
+        /* --- YÜKLEME & DURUM ANİMASYONLARI --- */
+        .spinner { border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #fff; width: 20px; height: 20px; animation: spin 1s ease-in-out infinite; margin: auto; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        button .spinner { position: static; margin-right: 10px; }
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 12px; background-color: var(--success-color); transition: all 0.3s ease; visibility: hidden; }
+        .status-dot.visible { visibility: visible; }
+        .status-dot.updating { background-color: var(--warning-color); animation: pulse 1s infinite; }
+        .status-dot.error { background-color: var(--error-color); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        
         @media (max-width: 768px) {
-            .login-form {
-                grid-template-columns: 1fr;
-            }
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
+            .login-form { grid-template-columns: 1fr; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
     </style>
-    <!-- CSS Kodları Bitişi -->
 </head>
 <body>
 
@@ -282,10 +99,8 @@
             <p>Sunucuya giriş yaparak İHA verilerine anlık olarak erişin.</p>
         </header>
 
-        <!-- Status Message Area -->
         <div id="statusMessageContainer"></div>
 
-        <!-- Control Panel -->
         <section class="card login-panel">
             <div class="card-header">
                 <h2><i class="fa-solid fa-right-to-bracket"></i> Kontrol Paneli</h2>
@@ -309,7 +124,6 @@
             </div>
         </section>
 
-        <!-- Data Fetching Controls -->
         <section class="card data-controls">
              <div class="card-header">
                 <h2><i class="fa-solid fa-database"></i> Veri İstekleri</h2>
@@ -325,9 +139,14 @@
             </div>
         </section>
 
-        <!-- Data Display Area -->
         <main class="data-grid">
-            <div class="card data-card" data-display="telemetry"><h3><i class="fa-solid fa-plane-up"></i> Telemetri Verisi</h3><pre>Bekleniyor...</pre></div>
+            <div class="card data-card" data-display="telemetry">
+                <h3>
+                    <i class="fa-solid fa-plane-up"></i> Telemetri Verisi
+                    <span class="status-dot" id="telemetryStatusDot"></span>
+                </h3>
+                <pre>Bekleniyor...</pre>
+            </div>
             <div class="card data-card" data-display="server_time"><h3><i class="fa-solid fa-clock"></i> Sunucu Saati</h3><pre>Bekleniyor...</pre></div>
             <div class="card data-card" data-display="hss_coordinates"><h3><i class="fa-solid fa-crosshairs"></i> HSS Koordinatları</h3><pre>Bekleniyor...</pre></div>
             <div class="card data-card" data-display="lock_on_info"><h3><i class="fa-solid fa-lock"></i> Kilitlenme Bilgisi</h3><pre>Bekleniyor...</pre></div>
@@ -336,207 +155,265 @@
         </main>
     </div>
 
-    <!-- JavaScript Kodları Başlangıcı -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
 
-            // --- Sabitler ve Değişkenler ---
-            const BASE_URL = 'https://tungaserver.onrender.com';
-            let authToken = null;
-            let statusTimeout;
+        let authToken = null;
+        let statusTimeout;
+        let autoFetchInterval = null;             // Telemetri için interval
+        let autoFetchIntervalServerTime = null;  // Sunucu saati için interval
+        const WAITING_FOR_DATA_MESSAGE = 'Sunucudan veri bekleniyor...';
 
-            // --- DOM Elementleri ---
-            const ui = {
-                usernameInput: document.getElementById('username'),
-                passwordInput: document.getElementById('password'),
-                loginButton: document.getElementById('loginButton'),
-                logoutButton: document.getElementById('logoutButton'),
-                tokenSpan: document.querySelector('#tokenDisplay span'),
-                statusContainer: document.getElementById('statusMessageContainer'),
-                dataFetchButtonContainer: document.getElementById('dataFetchButtons'),
-                clearDataButton: document.getElementById('clearDataButton'),
-                dataCards: document.querySelectorAll('.data-card'),
-            };
+        const ui = {
+            usernameInput: document.getElementById('username'),
+            passwordInput: document.getElementById('password'),
+            loginButton: document.getElementById('loginButton'),
+            logoutButton: document.getElementById('logoutButton'),
+            tokenSpan: document.querySelector('#tokenDisplay span'),
+            statusContainer: document.getElementById('statusMessageContainer'),
+            dataFetchButtonContainer: document.getElementById('dataFetchButtons'),
+            clearDataButton: document.getElementById('clearDataButton'),
+            telemetryStatusDot: document.getElementById('telemetryStatusDot'),
+        };
 
-            // --- Fonksiyonlar ---
-            const showStatus = (message, type = 'success') => {
-                clearTimeout(statusTimeout);
-                
-                const statusElement = document.createElement('div');
-                statusElement.className = `status-message status-${type}`;
-                statusElement.textContent = message;
+        const showStatus = (message, type = 'success') => {
+            clearTimeout(statusTimeout);
+            const statusElement = document.createElement('div');
+            statusElement.className = `status-message status-${type}`;
+            statusElement.textContent = message;
+            ui.statusContainer.innerHTML = '';
+            ui.statusContainer.appendChild(statusElement);
+            statusTimeout = setTimeout(() => {
+                statusElement.style.opacity = '0';
+                statusElement.addEventListener('transitionend', () => statusElement.remove());
+            }, 4000);
+        };
 
-                ui.statusContainer.innerHTML = ''; // Önceki mesajı temizle
-                ui.statusContainer.appendChild(statusElement);
-
-                statusTimeout = setTimeout(() => {
-                    statusElement.style.opacity = '0';
-                    statusElement.addEventListener('transitionend', () => statusElement.remove());
-                }, 4000);
-            };
-
-            const toggleLoader = (element, show) => {
-                if (element.tagName === 'BUTTON') {
-                    const icon = element.querySelector('i');
-                    if (show) {
-                        element.dataset.originalHtml = element.innerHTML; // İçeriği sakla
-                        element.innerHTML = '<div class="spinner"></div>';
-                    } else if (element.dataset.originalHtml) {
-                        element.innerHTML = element.dataset.originalHtml;
-                    }
-                } else if (element.tagName === 'PRE') {
-                    if (show) {
-                        element.innerHTML = '<div class="spinner"></div>';
-                    }
-                }
-            };
-            
-            // Düzeltilmiş loader fonksiyonu (Buton içeriğini korur)
-            const toggleButtonLoader = (button, show) => {
-                const icon = button.querySelector('i');
-                const text = button.innerText;
-
+        const toggleLoader = (element, show) => {
+            if (element.tagName === 'BUTTON') {
                 if (show) {
-                    button.dataset.originalText = text; // Metni sakla
-                    button.innerHTML = `<span class="spinner" style="position:static; border-top-color: white; margin-right: 8px;"></span> Yükleniyor...`;
-                } else {
-                    button.innerHTML = button.dataset.originalHtml; // Orijinal HTML'i (ikon + metin) geri yükle
+                    element.dataset.originalHtml = element.innerHTML;
+                    element.innerHTML = '<div class="spinner"></div>';
+                } else if (element.dataset.originalHtml) {
+                    element.innerHTML = element.dataset.originalHtml;
                 }
-            };
-
-
-            const updateUIForLoginState = (isLoggedIn) => {
-                ui.usernameInput.disabled = isLoggedIn;
-                ui.passwordInput.disabled = isLoggedIn;
-                ui.loginButton.disabled = isLoggedIn;
-                ui.logoutButton.disabled = !isLoggedIn;
-
-                document.querySelectorAll('#dataFetchButtons button').forEach(button => {
-                    button.disabled = !isLoggedIn;
-                });
-            };
-            
-            const clearAllDataDisplays = () => {
-                ui.dataCards.forEach(card => {
-                    card.querySelector('pre').textContent = 'Bekleniyor...';
-                });
-                showStatus('Tüm veri ekranları temizlendi.', 'info');
-            };
-
-            const handleLogin = async () => {
-                toggleLoader(ui.loginButton, true);
-                ui.loginButton.disabled = true;
-                
-                try {
-                    const response = await fetch(`${BASE_URL}/api/giris`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ kadi: ui.usernameInput.value, sifre: ui.passwordInput.value })
-                    });
-
-                    const result = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(result.error || 'Giriş başarısız oldu.');
-                    }
-
-                    authToken = result.token;
-                    ui.tokenSpan.textContent = authToken;
-                    showStatus('Giriş başarılı!', 'success');
-                    updateUIForLoginState(true);
-
-                } catch (error) {
-                    console.error('Giriş Hatası:', error);
-                    showStatus(`Giriş Hatası: ${error.message}`, 'error');
-                    updateUIForLoginState(false);
-                } finally {
-                    toggleLoader(ui.loginButton, false);
+            } else if (element.tagName === 'PRE') {
+                if (show) {
+                    element.innerHTML = '<div class="spinner"></div>';
                 }
-            };
+            }
+        };
 
-            const handleLogout = () => {
-                authToken = null;
-                ui.tokenSpan.textContent = 'Giriş yapılmadı.';
-                clearAllDataDisplays();
-                showStatus('Başarıyla çıkış yapıldı.', 'info');
-                updateUIForLoginState(false);
-            };
+        const clearAllDataDisplays = () => {
+            document.querySelectorAll('.data-card pre').forEach(pre => {
+                pre.textContent = 'Bekleniyor...';
+            });
+            showStatus('Tüm veri ekranları temizlendi.', 'info');
+        };
 
-            const handleFetchData = async (event) => {
-                const button = event.target.closest('button');
-                if (!button || button.disabled) return;
+        const startAutoFetchTelemetry = () => {
+            if (autoFetchInterval) return; // Zaten çalışıyorsa tekrar başlatma
+            ui.telemetryStatusDot.classList.add('visible');
 
-                const dataType = button.dataset.type;
-                if (!dataType) return;
+            autoFetchInterval = setInterval(async () => {
+                if (!authToken) return;
 
-                if (!authToken) {
-                    showStatus('Veri çekmek için önce giriş yapmalısınız.', 'error');
-                    return;
-                }
-
-                const urlMap = {
-                    'telemetry': `${BASE_URL}/api/telemetri`,
-                    'server_time': `${BASE_URL}/api/sunucusaati`,
-                    'hss_coordinates': `${BASE_URL}/api/hss_koordinatlari`,
-                    'lock_on_info': `${BASE_URL}/api/kilitlenme_bilgisi`,
-                    'kamikaze_info': `${BASE_URL}/api/kamikaze_bilgisi`,
-                    'qr_coordinates': `${BASE_URL}/api/qr_koordinati`
-                };
-
-                const displayElement = document.querySelector(`.data-card[data-display="${dataType}"] pre`);
-                const url = urlMap[dataType];
-                
-                if (!url || !displayElement) return;
-
-                toggleLoader(displayElement, true);
-                toggleLoader(button, true);
-                button.disabled = true;
+                ui.telemetryStatusDot.classList.remove('error');
+                ui.telemetryStatusDot.classList.add('updating');
 
                 try {
-                    const response = await fetch(url, {
-                        method: 'GET',
+                    const response = await fetch('/api/telemetri', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     });
+                    const data = await response.json();
+                    const telemetryPre = document.querySelector('.data-card[data-display="telemetry"] pre');
 
+                    telemetryPre.textContent = data.status === 'bekleniyor'
+                        ? data.mesaj || WAITING_FOR_DATA_MESSAGE
+                        : JSON.stringify(data, null, 2);
+
+                } catch (error) {
+                    ui.telemetryStatusDot.classList.add('error');
+                    console.error("Otomatik telemetri hatası:", error.message);
+                } finally {
+                    ui.telemetryStatusDot.classList.remove('updating');
+                }
+            }, 1000);
+
+            showStatus('Telemetri verisi otomatik güncelleniyor...', 'info');
+        };
+
+        const stopAutoFetchTelemetry = () => {
+            if (autoFetchInterval) clearInterval(autoFetchInterval);
+            autoFetchInterval = null;
+            ui.telemetryStatusDot.classList.remove('visible', 'updating', 'error');
+        };
+
+        const startAutoFetchServerTime = () => {
+            if (autoFetchIntervalServerTime) return; // Zaten çalışıyorsa tekrar başlatma
+
+            const serverTimePre = document.querySelector('.data-card[data-display="server_time"] pre');
+
+            const fetchAndDisplay = async () => {
+                if (!authToken) return;
+
+                try {
+                    const response = await fetch('/api/sunucusaati', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
                     const data = await response.json();
 
-                    if (!response.ok) {
-                        throw new Error(data.error || `API isteği başarısız oldu: ${response.statusText}`);
-                    }
-                    // Telemetri için özel gösterim
-                    if (dataType === 'telemetry') {
-                        displayElement.textContent = JSON.stringify(data, null, 2);
-                        showStatus('Telemetri verisi başarıyla çekildi.', 'success');
+                    if (data.status === 'bekleniyor' || !data.sunucu_saati) {
+                        serverTimePre.textContent = 'Sunucudan veri bekleniyor...';
                     } else {
-                    displayElement.textContent = JSON.stringify(data, null, 2);
-                    showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
+                        serverTimePre.textContent = data.sunucu_saati;
                     }
                 } catch (error) {
-                    console.error(`Veri Çekme Hatası (${dataType}):`, error);
-                    displayElement.textContent = `Hata: ${error.message}`;
-                    showStatus(`Hata: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(button, false);
-                    button.disabled = false;
+                    serverTimePre.textContent = 'Sunucu saati alınamadı.';
+                    console.error('Sunucu saati hatası:', error.message);
                 }
             };
 
-            // --- Olay Dinleyicileri (Event Listeners) ---
-            ui.loginButton.addEventListener('click', handleLogin);
-            ui.logoutButton.addEventListener('click', handleLogout);
-            ui.clearDataButton.addEventListener('click', clearAllDataDisplays);
-            ui.dataFetchButtonContainer.addEventListener('click', handleFetchData);
-            
-            // Butonların orijinal HTML'ini sakla
-            document.querySelectorAll('button').forEach(button => {
-                 button.dataset.originalHtml = button.innerHTML;
+            fetchAndDisplay(); // İlk veri çekimi
+
+            autoFetchIntervalServerTime = setInterval(fetchAndDisplay, 1000); // Sonraki her saniye
+            showStatus('Sunucu saati otomatik güncelleniyor...', 'info');
+        };
+
+        const stopAutoFetchServerTime = () => {
+            if (autoFetchIntervalServerTime) {
+                clearInterval(autoFetchIntervalServerTime);
+                autoFetchIntervalServerTime = null;
+                const serverTimePre = document.querySelector('.data-card[data-display="server_time"] pre');
+                if (serverTimePre) serverTimePre.textContent = 'Bekleniyor...';
+            }
+        };
+
+        // Kullanıcı arayüzü durum güncellemesi (butonlar, inputlar)
+        const updateUIForLoginState = (isLoggedIn) => {
+            ui.usernameInput.disabled = isLoggedIn;
+            ui.passwordInput.disabled = isLoggedIn;
+            ui.loginButton.disabled = isLoggedIn;
+            ui.logoutButton.disabled = !isLoggedIn;
+            document.querySelectorAll('#dataFetchButtons button').forEach(button => {
+                button.disabled = !isLoggedIn;
             });
 
-            // --- Başlangıç Ayarları ---
+            if (!isLoggedIn) {
+                // Kullanıcı çıkış yaptıysa tüm otomatik işlemleri durdur
+                stopAutoFetchTelemetry();
+                stopAutoFetchServerTime();
+                clearAllDataDisplays();
+            }
+        };
+
+        const handleLogin = async () => {
+            toggleLoader(ui.loginButton, true);
+            ui.loginButton.disabled = true;
+            try {
+                const response = await fetch('/api/giris', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kadi: ui.usernameInput.value, sifre: ui.passwordInput.value })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Giriş başarısız oldu.');
+                authToken = result.token;
+                ui.tokenSpan.textContent = authToken;
+                showStatus('Giriş başarılı! Telemetri veya Sunucu Saati butonuna tıklayın.', 'success');
+                updateUIForLoginState(true);
+
+            } catch (error) {
+                showStatus(`Giriş Hatası: ${error.message}`, 'error');
+                updateUIForLoginState(false);
+            } finally {
+                toggleLoader(ui.loginButton, false);
+            }
+        };
+
+        const handleLogout = () => {
+            authToken = null;
+            ui.tokenSpan.textContent = 'Giriş yapılmadı.';
+            showStatus('Başarıyla çıkış yapıldı.', 'info');
             updateUIForLoginState(false);
-            showStatus('Panele hoş geldiniz! Lütfen giriş yapın.', 'info');
+        };
+
+        const handleFetchData = async (event) => {
+            const button = event.target.closest('button');
+            if (!button || button.disabled) return;
+            const dataType = button.dataset.type;
+            if (!dataType) return;
+
+            if (!authToken) {
+                showStatus('Veri çekmek için önce giriş yapmalısınız.', 'error');
+                return;
+            }
+
+            const urlMap = {
+                'telemetry': '/api/telemetri',
+                'server_time': '/api/sunucusaati',
+                'hss_coordinates': '/api/hsskoordinatlari',
+                'lock_on_info': '/api/kilitlenmebilgisi',
+                'kamikaze_info': '/api/kamikazebilgisi',
+                'qr_coordinates': '/api/qrkoordinati'
+            };
+
+            const displayElement = document.querySelector(`.data-card[data-display="${dataType}"] pre`);
+            const url = urlMap[dataType];
+            if (!url || !displayElement) return;
+
+            toggleLoader(displayElement, true);
+            toggleLoader(button, true);
+            button.disabled = true;
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (!response.ok && data.status !== 'bekleniyor') {
+                    throw new Error(data.error || data.mesaj || `API hatası`);
+                }
+
+                if (data.status === 'bekleniyor') {
+                    displayElement.textContent = data.mesaj;
+                } else {
+                    displayElement.textContent = JSON.stringify(data, null, 2);
+                }
+
+                showStatus(`${button.innerText.trim()} verisi başarıyla çekildi.`, 'success');
+
+            } catch (error) {
+                displayElement.textContent = `Hata: ${error.message}`;
+                showStatus(`Hata: ${error.message}`, 'error');
+            } finally {
+                toggleLoader(button, false);
+                button.disabled = false;
+            }
+
+            // Butona tıklanınca otomatik güncelleme başlat
+            if (dataType === 'telemetry') {
+                startAutoFetchTelemetry();
+            } else if (dataType === 'server_time') {
+                startAutoFetchServerTime();
+            }
+        };
+
+        // Olay dinleyicilerini ata
+        ui.loginButton.addEventListener('click', handleLogin);
+        ui.logoutButton.addEventListener('click', handleLogout);
+        ui.clearDataButton.addEventListener('click', clearAllDataDisplays);
+        ui.dataFetchButtonContainer.addEventListener('click', handleFetchData);
+
+        document.querySelectorAll('button').forEach(button => {
+            button.dataset.originalHtml = button.innerHTML;
         });
-    </script>
-    <!-- JavaScript Kodları Bitişi -->
+
+        updateUIForLoginState(false);
+        showStatus('Panele hoş geldiniz! Lütfen giriş yapın.', 'info');
+
+    });
+</script>
+
 </body>
 </html>

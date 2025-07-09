@@ -4,13 +4,14 @@ import datetime
 import os
 import uuid
 from flask_cors import CORS
-import requests
 
 app = Flask(__name__)
-CORS(app)
+# Tüm kaynaklardan gelen isteklere izin ver (geliştirme için). 
+# Üretim ortamında daha kısıtlayıcı olabilirsiniz.
+CORS(app) 
 
+# --- Sabitler ---
 DATA_FILE = 'data.json'
-
 USERS = {
     "teknofest_user": {
         "sifre": "savasaniha2025",
@@ -18,48 +19,62 @@ USERS = {
     }
 }
 
-# --- UUID tabanlı oturum yönetimi için eklemeler ---
+# --- Uygulama İçi Hafıza (State) ---
+# Aktif token'ları burada tutacağız. Sunucu yeniden başladığında silinirler.
 active_tokens = {}
 
+# --- Yardımcı Fonksiyonlar ---
 def load_data():
+    """data.json dosyasını güvenli bir şekilde okur."""
     if not os.path.exists(DATA_FILE):
-        return None
+        return {} # Dosya yoksa boş bir dictionary döndür
     try:
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            # Dosya boşsa veya geçersizse JSONDecodeError'u yakala
             return json.load(f)
-    except:
-        return None
+    except (json.JSONDecodeError, FileNotFoundError):
+        return {} # Hata durumunda da boş dictionary döndür
+
+def save_data(data):
+    """Verilen dictionary'i data.json dosyasına yazar."""
+    try:
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        print(f"Dosya yazma hatası: {e}")
+        return False
 
 def authenticate_token(token):
+    """Verilen token'ın aktif olup olmadığını kontrol eder."""
     return token in active_tokens
 
+# --- Middleware (Her İstekten Önce Çalışan Kod) ---
 @app.before_request
 def check_authorization():
-    no_auth_paths = ['/', '/api/giris', '/favicon.ico']
-    if request.path in no_auth_paths or request.method == 'OPTIONS':
+    """Giriş ve ana sayfa dışındaki tüm endpoint'ler için token kontrolü yapar."""
+    # OPTIONS istekleri, CORS preflight için gereklidir, dokunmuyoruz.
+    if request.method == 'OPTIONS':
         return
+    
+    # Kimlik doğrulama gerektirmeyen yollar
+    no_auth_paths = ['/', '/api/giris', '/favicon.ico']
+    if request.path in no_auth_paths:
+        return
+
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return jsonify({"error": "Token gerekli veya format hatalı (Bearer <token>)"}), 401
-    token = auth_header.replace("Bearer ", "")
+    
+    token = auth_header.split(" ")[1]
     if not authenticate_token(token):
         return jsonify({"error": "Geçersiz, süresi dolmuş veya hatalı token."}), 401
-    request.user = active_tokens[token]  # Gerekirse endpointlerde kullanmak için
+    
+    # İsteğe kullanıcı bilgisini ekle, böylece endpoint'ler kullanabilir
+    request.user_id = active_tokens.get(token)
 
-# --- Yeni eklenen GitHub'dan veri indirme fonksiyonu ---
-GITHUB_RAW_URL = 'https://raw.githubusercontent.com/kullanici_adi/repo_adi/branch/data.json'  # BURAYA gerçek URL'ni koy
 
-def download_data_json():
-    try:
-        response = requests.get(GITHUB_RAW_URL)
-        if response.status_code == 200:
-            with open(DATA_FILE, 'w', encoding='utf-8') as f:
-                f.write(response.text)
-            print("data.json başarıyla güncellendi.")
-        else:
-            print(f"GitHub dosyası alınamadı, status code: {response.status_code}")
-    except Exception as e:
-        print(f"Hata: {e}")
+# --- API Endpoint'leri ---
 
 @app.route('/')
 def index():
@@ -67,115 +82,99 @@ def index():
 
 @app.route('/api/giris', methods=['POST'])
 def giris():
+    """Kullanıcı girişi yapar ve token oluşturur."""
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "İstek gövdesi boş."}), 400
+
     kadi = data.get('kadi')
     sifre = data.get('sifre')
-    if kadi in USERS and USERS[kadi]["sifre"] == sifre:
+    
+    user = USERS.get(kadi)
+    if user and user["sifre"] == sifre:
         token = str(uuid.uuid4())
-        active_tokens[token] = kadi
-        takim_numarasi = USERS[kadi]["takim_numarasi"]
-        return jsonify({"message": "Giriş başarılı.", "token": token, "takim_numarasi": takim_numarasi}), 200
+        active_tokens[token] = kadi # Token'ı aktif et
+        return jsonify({
+            "message": "Giriş başarılı.", 
+            "token": token, 
+            "takim_numarasi": user["takim_numarasi"]
+        }), 200
     else:
-        return jsonify({"error": "Geçersiz kullanıcı adı veya parola."}), 400
+        return jsonify({"error": "Geçersiz kullanıcı adı veya parola."}), 401
 
 @app.route('/api/telemetri', methods=['GET'])
 def get_telemetry():
-    data = load_data()
-    if data and 'telemetry' in data:
-        return jsonify(data['telemetry'])
-    return jsonify({"error": "Telemetri verisi bulunamadı veya data.json dosyası eksik."}), 404
+    """En son telemetri verisini döndürür."""
+    all_data = load_data()
+    telemetry_list = all_data.get('telemetry', [])
+    
+    if telemetry_list:
+        # Listenin son elemanını (en güncel olanı) döndür
+        return jsonify(telemetry_list[-1]), 200
+    
+    # Veri yoksa hata yerine "bekleniyor" durumu döndür
+    return jsonify({
+        "status": "bekleniyor",
+        "mesaj": "Henüz telemetri verisi alınmadı."
+    }), 200
 
 @app.route('/api/telemetri', methods=['POST'])
 def post_telemetry():
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return jsonify({"error": "Token gerekli"}), 401
-    token = auth_header.replace("Bearer ", "")
-    if not authenticate_token(token):
-        return jsonify({"error": "Geçersiz, süresi dolmuş veya hatalı token."}), 401
+    """İHA'dan gelen telemetri verisini kaydeder."""
+    new_telemetry_data = request.get_json()
+    if not new_telemetry_data:
+        return jsonify({"error": "Geçersiz JSON verisi."}), 400
 
-    data = request.get_json()
-    if data is None:
-        return jsonify({"error": "Geçersiz JSON"}), 400
+    all_data = load_data()
+    telemetry_list = all_data.get('telemetry', [])
+    
+    telemetry_list.append(new_telemetry_data)
+    
+    # Listede sadece son 20 kaydı tut
+    all_data['telemetry'] = telemetry_list[-20:]
+    
+    if save_data(all_data):
+        return jsonify({"message": "Telemetri verisi alındı."}), 201
+    else:
+        return jsonify({"error": "Sunucu hatası: Veri kaydedilemedi."}), 500
 
-    # Son 20 telemetriyi tutacak şekilde güncelle
-    telemetry_list = []
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                existing = json.load(f)
-                if isinstance(existing, dict) and 'telemetry' in existing:
-                    if isinstance(existing['telemetry'], list):
-                        telemetry_list = existing['telemetry']
-                    else:
-                        telemetry_list = [existing['telemetry']]
-        except Exception:
-            telemetry_list = []
-
-    telemetry_list.append(data)
-    if len(telemetry_list) > 20:
-        telemetry_list = telemetry_list[-20:]
-
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump({"telemetry": telemetry_list}, f, ensure_ascii=False, indent=4)
-
-    return jsonify({"message": "Telemetri verisi alındı."}), 200
+def get_data_by_key(key, not_found_message):
+    """Belirli bir anahtar için veri döndüren genel fonksiyon."""
+    all_data = load_data()
+    if key in all_data:
+        return jsonify(all_data[key]), 200
+    return jsonify({"status": "bekleniyor", "mesaj": not_found_message}), 200
 
 @app.route('/api/sunucusaati', methods=['GET'])
 def get_server_time():
     now = datetime.datetime.now()
-    server_time_data = {
+    return jsonify({
         "gun": now.day,
         "saat": now.hour,
         "dakika": now.minute,
         "saniye": now.second,
         "milisaniye": now.microsecond // 1000
-    }
-    return jsonify(server_time_data)
+    })
 
 @app.route('/api/hss_koordinatlari', methods=['GET'])
 def get_hss_coordinates():
-    data = load_data()
-    if data and 'hss_coordinates' in data:
-        now = datetime.datetime.now()
-        server_time_data = {
-            "gun": now.day,
-            "saat": now.hour,
-            "dakika": now.minute,
-            "saniye": now.second,
-            "milisaniye": now.microsecond // 1000
-        }
-        return jsonify({
-            "sunucusaati": server_time_data,
-            "hss_koordinat_bilgileri": data['hss_coordinates']
-        })
-    return jsonify({"error": "HSS koordinat verisi bulunamadı."}), 500
+    return get_data_by_key('hss_coordinates', "HSS koordinat verisi bekleniyor.")
 
 @app.route('/api/kilitlenme_bilgisi', methods=['GET'])
 def get_lock_on_info():
-    data = load_data()
-    if data and 'lock_on_info' in data:
-        return jsonify(data['lock_on_info'])
-    return jsonify({"error": "Kilitlenme bilgisi bulunamadı."}), 500
+    return get_data_by_key('lock_on_info', "Kilitlenme bilgisi bekleniyor.")
 
 @app.route('/api/kamikaze_bilgisi', methods=['GET'])
 def get_kamikaze_info():
-    data = load_data()
-    if data and 'kamikaze_info' in data:
-        return jsonify(data['kamikaze_info'])
-    return jsonify({"error": "Kamikaze bilgisi bulunamadı."}), 500
+    return get_data_by_key('kamikaze_info', "Kamikaze bilgisi bekleniyor.")
 
 @app.route('/api/qr_koordinati', methods=['GET'])
 def get_qr_coordinates():
-    data = load_data()
-    if data and 'qr_coordinates' in data:
-        return jsonify(data['qr_coordinates'])
-    return jsonify({"error": "QR koordinat bilgisi bulunamadı."}), 500
+    return get_data_by_key('qr_coordinates', "QR koordinat bilgisi bekleniyor.")
 
-
+# --- Sunucuyu Başlatma ---
 if __name__ == '__main__':
-    download_data_json()  # <-- Sunucu başlarken data.json güncellenir
-    app.run(host='0.0.0.0', port=5000)
-
-
-
+    # '0.0.0.0' host'u, sunucunun ağdaki tüm arayüzlerden erişilebilir olmasını sağlar.
+    # Render gibi platformlar için bu gereklidir.
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True) # debug=True geliştirme sırasında faydalıdır.
